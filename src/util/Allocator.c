@@ -18,6 +18,10 @@ Arena NewArena(size_t capacity)
 
 void* Allocate(Arena* arena, size_t size)
 {
+    if (arena->Capacity - arena->Offset < size) {
+        return NULL;
+    }
+
     void* ptr = arena->Memory + arena->Offset;
     arena->Offset += size;
     return ptr;
