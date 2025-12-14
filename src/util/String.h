@@ -8,13 +8,19 @@
 
 #include "String.h"
 
-typedef struct string_imp
-{
+typedef struct string_imp {
     char *Data;
     size_t Size;
 } String;
 
 String *NewString(char *data);
+
 String *StringSlice(String *inpStr, size_t start, size_t end);
+
+char StringGet(String *str, size_t index);
+
+int StringCopy(String *inpStr, String *outStr);
+
+int FreeString(String *str);
 
 #endif //CSTDLIB_STRING_H
