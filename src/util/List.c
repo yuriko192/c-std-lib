@@ -10,6 +10,7 @@ Node* NewNode(void* data)
 {
     Node* node = malloc(sizeof(Node));
     node->Data = data;
+    node->Next = NULL;
     return node;
 }
 
