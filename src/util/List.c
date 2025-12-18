@@ -31,11 +31,15 @@ List* NewList()
     return list;
 }
 
-void ListAdd(List* list, void* data)
+int ListAdd(List* list, void* data)
 {
+    if (list == NULL) {
+        return -1;
+    }
+
     Node* node = NewNode(data);
     if (node == NULL) {
-        return;
+        return -1;
     }
 
     list->Size++;
@@ -43,11 +47,12 @@ void ListAdd(List* list, void* data)
     {
         list->Head = node;
         list->Tail = node;
-        return;
+        return 0;
     }
 
     list->Tail->Next = node;
     list->Tail = node;
+    return 0;
 }
 
 void FreeList(List* list)
