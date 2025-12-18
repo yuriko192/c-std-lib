@@ -23,5 +23,6 @@ Node *NewNode(void *data);
 List *NewList();
 
 void ListAdd(List *list, void *data);
+void FreeList(List *list);
 
 #endif //CSTDLIB_LIST_H

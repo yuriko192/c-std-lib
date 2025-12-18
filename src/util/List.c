@@ -49,3 +49,19 @@ void ListAdd(List* list, void* data)
     list->Tail->Next = node;
     list->Tail = node;
 }
+
+void FreeList(List* list)
+{
+    if (list == NULL) {
+        return;
+    }
+
+    Node* current = list->Head;
+    while (current != NULL) {
+        Node* next = current->Next;
+        free(current);
+        current = next;
+    }
+
+    free(list);
+}
