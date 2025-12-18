@@ -4,7 +4,7 @@
 
 #ifndef CSTDLIB_ALLOCATOR_H
 #define CSTDLIB_ALLOCATOR_H
-#include "String.h"
+#include <stddef.h>
 
 typedef struct arena
 {
@@ -12,5 +12,9 @@ typedef struct arena
     size_t Offset;
     void *Memory;
 } Arena;
+
+Arena NewArena(size_t capacity);
+void* Allocate(Arena* arena, size_t size);
+void FreeArena(Arena arena);
 
 #endif //CSTDLIB_ALLOCATOR_H

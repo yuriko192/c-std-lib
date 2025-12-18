@@ -2,17 +2,28 @@
 // Created by Yuriko on 12/14/2025.
 //
 
-#include "allocator.h"
+#include "Allocator.h"
 
 #include <stdlib.h>
 
 
 Arena NewArena(size_t capacity)
 {
+    if (capacity == 0)
+    {
+        return (Arena){
+            .Capacity = 0,
+            .Offset = 0,
+            .Memory = NULL
+        };
+    }
+
+    void* memory = malloc(capacity);
+    // ReSharper disable once CppDFAMemoryLeak
     return (Arena){
         .Capacity = capacity,
         .Offset = 0,
-        .Memory = malloc(capacity)
+        .Memory = memory
     };
 }
 
@@ -31,5 +42,3 @@ void FreeArena(Arena arena)
 {
     free(arena.Memory);
 }
-
-
