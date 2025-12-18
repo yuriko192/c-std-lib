@@ -10,7 +10,8 @@
 String* NewString(const char* data, size_t size)
 {
     String* str = malloc(sizeof(String));
-    if (str == NULL) {
+    if (str == NULL)
+    {
         return NULL;
     }
 
@@ -22,7 +23,8 @@ String* NewString(const char* data, size_t size)
     }
 
     str->Data = malloc(size + 1);
-    if (str->Data == NULL) {
+    if (str->Data == NULL)
+    {
         free(str);
         return NULL;
     }
@@ -35,10 +37,12 @@ String* NewString(const char* data, size_t size)
 
 String* StringSlice(String* inpStr, size_t start, size_t end)
 {
-    if (inpStr == NULL || inpStr->Data == NULL) {
+    if (inpStr == NULL || inpStr->Data == NULL)
+    {
         return NULL;
     }
-    if (start > end || end > inpStr->Size) {
+    if (start > end || end > inpStr->Size)
+    {
         return NULL;
     }
 
@@ -59,11 +63,13 @@ char StringGet(String* str, size_t idx)
 int StringCopy(String* inpStr, String* outStr)
 {
     if (inpStr == NULL || outStr == NULL
-        || inpStr->Data == NULL || outStr->Data == NULL) {
+        || inpStr->Data == NULL || outStr->Data == NULL)
+    {
         return -1;
     }
 
-    if (inpStr->Size == 0) {
+    if (inpStr->Size == 0)
+    {
         outStr->Size = 0;
         return 0;
     }
@@ -78,27 +84,25 @@ int StringCopy(String* inpStr, String* outStr)
 
 int StringCopyFromCharPtr(String* outStr, const char* src, size_t size)
 {
-    if (outStr == NULL || src == NULL) {
+    if (outStr == NULL || src == NULL)
+    {
         return -1;
     }
-    
-    if (size == 0) {
-        if (outStr->Data != NULL) {
-            outStr->Data[0] = '\0';
-        }
-        outStr->Size = 0;
-        return 0;
-    }
 
-    if (outStr->Data == NULL || outStr->Size < size) {
-        char* newData = realloc(outStr->Data, size + 1);
-        if (newData == NULL) {
+    if (outStr->Data == NULL)
+    {
+        outStr->Data = malloc(size + 1);
+        if (outStr->Data == NULL)
+        {
             return -1;
         }
-        outStr->Data = newData;
     }
-    
-    memcpy(outStr->Data, src, size);
+
+    if (size != 0)
+    {
+        memcpy(outStr->Data, src, size);
+    }
+
     outStr->Data[size] = '\0';
     outStr->Size = size;
     return 0;
@@ -106,7 +110,8 @@ int StringCopyFromCharPtr(String* outStr, const char* src, size_t size)
 
 int FreeString(String* str)
 {
-    if (str == NULL) {
+    if (str == NULL)
+    {
         return -1;
     }
     free(str->Data);
