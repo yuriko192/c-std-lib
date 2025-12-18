@@ -13,7 +13,7 @@ typedef struct string_imp {
     size_t Size;
 } String;
 
-String *NewString(char *data);
+String *NewString(const char *data, size_t size);
 
 String *StringSlice(String *inpStr, size_t start, size_t end);
 
