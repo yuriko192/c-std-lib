@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-String* NewString(const char* data, size_t size)
+String* NewStringWithCapacity(size_t capacity)
 {
     String* str = malloc(sizeof(String));
     if (str == NULL)
@@ -15,18 +15,61 @@ String* NewString(const char* data, size_t size)
         return NULL;
     }
 
-    if (data == NULL || size == 0)
+    str->Size = 0;
+    str->Capacity = capacity;
+    if (capacity == 0)
     {
-        str->Size = 0;
         str->Data = NULL;
         return str;
     }
 
-    str->Data = malloc(size + 1);
+    str->Data = malloc(capacity);
     if (str->Data == NULL)
     {
         free(str);
         return NULL;
+    }
+    str->Data[0] = '\0';
+    return str;
+}
+
+String* NewStringFromChar(const char* data, size_t size)
+{
+    if (data == NULL || size == 0)
+    {
+        return NewStringWithCapacity(0);
+    }
+
+    String* str = NewStringWithCapacity(size + 1);
+    if (str == NULL)
+    {
+        return NULL;
+    }
+
+    memcpy(str->Data, data, size);
+    str->Data[size] = '\0';
+    str->Size = size;
+    return str;
+}
+
+
+String* NewStringFromChar_WithCapacity(const char* data, size_t size, size_t capacity)
+{
+    size_t actualCapacity = capacity;
+    if (data != NULL && capacity < size + 1)
+    {
+        actualCapacity = size + 1;
+    }
+
+    String* str = NewStringWithCapacity(actualCapacity);
+    if (str == NULL)
+    {
+        return NULL;
+    }
+
+    if (data == NULL)
+    {
+        return str;
     }
 
     memcpy(str->Data, data, size);
@@ -46,7 +89,7 @@ String* StringSlice(String* inpStr, size_t start, size_t end)
         return NULL;
     }
 
-    String* str = NewString(inpStr->Data + start, end - start);
+    String* str = NewStringFromChar(inpStr->Data + start, end - start);
     return str;
 }
 
@@ -62,24 +105,18 @@ char StringGet(String* str, size_t idx)
 
 int StringCopy(String* inpStr, String* outStr)
 {
-    if (inpStr == NULL || outStr == NULL
-        || inpStr->Data == NULL || outStr->Data == NULL)
+    if (inpStr == NULL || outStr == NULL)
     {
         return -1;
     }
 
-    if (inpStr->Size == 0)
+    if (inpStr->Data == NULL || inpStr->Size == 0)
     {
         outStr->Size = 0;
         return 0;
     }
 
-    for (int i = 0; i < inpStr->Size; ++i)
-    {
-        outStr->Data[i] = StringGet(inpStr, i);
-    }
-    outStr->Size = inpStr->Size;
-    return 0;
+    return StringCopyFromCharPtr(outStr, inpStr->Data, inpStr->Size);
 }
 
 int StringCopyFromCharPtr(String* outStr, const char* src, size_t size)
@@ -89,11 +126,18 @@ int StringCopyFromCharPtr(String* outStr, const char* src, size_t size)
         return -1;
     }
 
-    if (outStr->Data == NULL)
+    if (outStr->Data == NULL || outStr->Capacity < size + 1)
     {
-        outStr->Data = malloc(size + 1);
+        if (outStr->Data != NULL)
+        {
+            free(outStr->Data);
+        }
+
+        outStr->Capacity = size + 1;
+        outStr->Data = malloc(outStr->Capacity);
         if (outStr->Data == NULL)
         {
+            outStr->Capacity = 0;
             return -1;
         }
     }
@@ -117,5 +161,6 @@ int FreeString(String* str)
     free(str->Data);
     str->Data = NULL;
     str->Size = 0;
+    str->Capacity = 0;
     return 0;
 }

@@ -9,9 +9,12 @@
 typedef struct string_imp {
     char *Data;
     size_t Size;
+    size_t Capacity;
 } String;
 
-String *NewString(const char *data, size_t size);
+String *NewStringFromChar(const char *data, size_t size);
+
+String *NewStringWithCapacity(size_t capacity);
 
 String *StringSlice(String *inpStr, size_t start, size_t end);
 
