@@ -10,53 +10,61 @@
 #include "../List.h"
 
 
-String getHttpMethodStr(HttpMethod method) {
-    switch (method) {
-        case GET:
-            return (String){
-                .Data = "GET",
-                .Size = 3,
-            };
-        case POST:
-            return (String){
-                .Data = "POST",
-                .Size = 4,
-            };
-        case PUT:
-            return (String){
-                .Data = "PUT",
-                .Size = 3,
-            };
-        case DELETE:
-            return (String){
-                .Data = "DELETE",
-                .Size = 6,
-            };
-        case PATCH:
-            return (String){
-                .Data = "PATCH",
-                .Size = 5,
-            };
-        default:
-            return (String){
-                .Data = nullptr,
-                .Size = 0,
-            };
+const char* CRLF = "\r\n";
+const char* HOST_KEY = "HOST: ";
+
+String getHttpMethodStr(HttpMethod method)
+{
+    switch (method)
+    {
+    case GET:
+        return (String){
+            .Data = "GET",
+            .Size = 3,
+        };
+    case POST:
+        return (String){
+            .Data = "POST",
+            .Size = 4,
+        };
+    case PUT:
+        return (String){
+            .Data = "PUT",
+            .Size = 3,
+        };
+    case DELETE:
+        return (String){
+            .Data = "DELETE",
+            .Size = 6,
+        };
+    case PATCH:
+        return (String){
+            .Data = "PATCH",
+            .Size = 5,
+        };
+    default:
+        return (String){
+            .Data = NULL,
+            .Size = 0,
+        };
     }
 }
 
-String getHttpVersionStr() {
+String getHttpVersionStr()
+{
     return (String){
         .Data = "HTTP/1.1",
         .Size = 8,
     };
 }
 
-int GenerateHttpReqStr(String *output, List *httpLines) {
-    Node *currNode = httpLines->Head;
+int GenerateHttpReqStr(String* output, List* httpLines)
+{
+    Node* currNode = httpLines->Head;
     size_t outputLength = 3;
-    while (currNode != NULL) {
-        String tempData = *(String *) currNode->Data;
+    while (currNode != NULL)
+    {
+        String tempData = *(String*)currNode->Data;
         outputLength += tempData.Size;
         outputLength += 2;
         currNode = currNode->Next;
@@ -68,16 +76,17 @@ int GenerateHttpReqStr(String *output, List *httpLines) {
         .Size = 0,
     };
     currNode = httpLines->Head;
-    while (currNode != NULL) {
+    while (currNode != NULL)
+    {
         StringCopy(currNode->Data, &iteratedLine);
         iteratedLine.Data = iteratedLine.Data + iteratedLine.Size;
         iteratedLine.Size = 0;
-        StringCopy(NewString("\r\n"), &iteratedLine);
+        StringCopy(NewString(CRLF, strlen(CRLF)), &iteratedLine);
         iteratedLine.Data = iteratedLine.Data + iteratedLine.Size;
         iteratedLine.Size = 0;
         currNode = currNode->Next;
     }
-    StringCopy(NewString("\r\n"), &iteratedLine);
+    StringCopy(NewString(CRLF, strlen(CRLF)), &iteratedLine);
     return 0;
 }
 
@@ -89,14 +98,17 @@ int GenerateHttpReqStr(String *output, List *httpLines) {
 // Content-Length: 22               # *( field-line CRLF )
 //                                  # CRLF
 // {"flavor":"dark mode"}          # [ message-body ]
-int CreateHttpRequest(String *output, HttpMethod method, String *host, String *httpPath) {
+int CreateHttpRequest(String* output, HttpMethod method, String* host, String* httpPath)
+{
     String httpMethod = getHttpMethodStr(method);
-    if (httpMethod.Data == nullptr) {
+    if (httpMethod.Data == NULL)
+    {
         return -1;
     }
 
     String httpVersion = getHttpVersionStr();
-    if (output->Data != nullptr) {
+    if (output->Data != NULL)
+    {
         FreeString(output);
     }
 
@@ -123,7 +135,7 @@ int CreateHttpRequest(String *output, HttpMethod method, String *host, String *h
     iteratedLine.Data[iteratedLine.Size] = 0;
     httpStartLine.Size = strlen(httpStartLine.Data);
 
-    List *httpLines = NewList();
+    List* httpLines = NewList();
     ListAdd(httpLines, &httpStartLine);
 
     String httpHostLine = (String){
@@ -134,7 +146,8 @@ int CreateHttpRequest(String *output, HttpMethod method, String *host, String *h
         .Data = httpHostLine.Data,
         .Size = httpHostLine.Size,
     };
-    StringCopy(NewString("HOST: "), &iteratedLine);
+
+    StringCopy(NewString(HOST_KEY, strlen(HOST_KEY)), &iteratedLine);
     iteratedLine.Data = iteratedLine.Data + iteratedLine.Size;
     iteratedLine.Size = 0;
     StringCopy(host, &iteratedLine);
