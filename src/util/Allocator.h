@@ -13,8 +13,8 @@ typedef struct arena
     void *Memory;
 } Arena;
 
-Arena NewArena(size_t capacity);
+Arena* NewArena(size_t capacity);
 void* Allocate(Arena* arena, size_t size);
-void FreeArena(Arena arena);
+void FreeArena(Arena* arena);
 
 #endif //CSTDLIB_ALLOCATOR_H

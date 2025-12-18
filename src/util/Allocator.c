@@ -7,29 +7,39 @@
 #include <stdlib.h>
 
 
-Arena NewArena(size_t capacity)
+Arena* NewArena(size_t capacity)
 {
+    Arena* arena = malloc(sizeof(Arena));
+    if (arena == NULL)
+    {
+        return NULL;
+    }
+
     if (capacity == 0)
     {
-        return (Arena){
-            .Capacity = 0,
-            .Offset = 0,
-            .Memory = NULL
-        };
+        arena->Capacity = 0;
+        arena->Offset = 0;
+        arena->Memory = NULL;
+        return arena;
     }
 
     void* memory = malloc(capacity);
-    // ReSharper disable once CppDFAMemoryLeak
-    return (Arena){
-        .Capacity = capacity,
-        .Offset = 0,
-        .Memory = memory
-    };
+    if (memory == NULL)
+    {
+        free(arena);
+        return NULL;
+    }
+
+    arena->Capacity = capacity;
+    arena->Offset = 0;
+    arena->Memory = memory;
+    return arena;
 }
 
 void* Allocate(Arena* arena, size_t size)
 {
-    if (arena->Capacity - arena->Offset < size) {
+    if (arena->Capacity - arena->Offset < size)
+    {
         return NULL;
     }
 
@@ -38,7 +48,12 @@ void* Allocate(Arena* arena, size_t size)
     return ptr;
 }
 
-void FreeArena(Arena arena)
+void FreeArena(Arena* arena)
 {
-    free(arena.Memory);
+    if (arena == NULL)
+    {
+        return;
+    }
+    free(arena->Memory);
+    free(arena);
 }
