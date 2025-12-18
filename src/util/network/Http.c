@@ -21,31 +21,37 @@ String getHttpMethodStr(HttpMethod method)
         return (String){
             .Data = "GET",
             .Size = 3,
+            .Capacity = 3,
         };
     case POST:
         return (String){
             .Data = "POST",
             .Size = 4,
+            .Capacity = 4,
         };
     case PUT:
         return (String){
             .Data = "PUT",
             .Size = 3,
+            .Capacity = 3,
         };
     case DELETE:
         return (String){
             .Data = "DELETE",
             .Size = 6,
+            .Capacity = 6,
         };
     case PATCH:
         return (String){
             .Data = "PATCH",
             .Size = 5,
+            .Capacity = 5,
         };
     default:
         return (String){
             .Data = NULL,
             .Size = 0,
+            .Capacity = 0,
         };
     }
 }
@@ -55,11 +61,13 @@ String getHttpVersionStr()
     return (String){
         .Data = "HTTP/1.1",
         .Size = 8,
+        .Capacity = 8,
     };
 }
 
 int GenerateHttpReqStr(String* output, List* httpLines)
 {
+    // Total output length calculation
     Node* currNode = httpLines->Head;
     size_t outputLength = 3;
     while (currNode != NULL)
@@ -71,22 +79,32 @@ int GenerateHttpReqStr(String* output, List* httpLines)
     }
 
     output->Data = malloc(sizeof(char) * outputLength);
+    if (output->Data == NULL)
+    {
+        return -1;
+    }
+    output->Capacity = outputLength;
+
+    // output builder iteration
     String iteratedLine = (String){
         .Data = output->Data,
         .Size = 0,
+        .Capacity = outputLength,
     };
     currNode = httpLines->Head;
     while (currNode != NULL)
     {
-        StringCopy(currNode->Data, &iteratedLine);
+        StringCopy((String*)currNode->Data, &iteratedLine);
         iteratedLine.Data = iteratedLine.Data + iteratedLine.Size;
         iteratedLine.Size = 0;
-        StringCopy(NewString(CRLF, strlen(CRLF)), &iteratedLine);
+        StringCopyFromCharPtr(&iteratedLine, CRLF, strlen(CRLF));
         iteratedLine.Data = iteratedLine.Data + iteratedLine.Size;
         iteratedLine.Size = 0;
         currNode = currNode->Next;
     }
-    StringCopy(NewString(CRLF, strlen(CRLF)), &iteratedLine);
+
+    StringCopyFromCharPtr(&iteratedLine, CRLF, strlen(CRLF));
+    output->Size = outputLength;
     return 0;
 }
 
@@ -112,16 +130,24 @@ int CreateHttpRequest(String* output, HttpMethod method, String* host, String* h
         FreeString(output);
     }
 
+    List* httpLines = NewList();
+    if (httpLines == NULL)
+    {
+        return -1;
+    }
 
     size_t httpStartLineCapacity = httpMethod.Size + httpPath->Size + httpVersion.Size + 3;
-    String httpStartLine = (String){
-        .Data = malloc(sizeof(char) * httpStartLineCapacity),
-        .Size = 0,
-    };
+    String* httpStartLine = NewStringWithCapacity(httpStartLineCapacity);
+    if (httpStartLine == NULL)
+    {
+        return -1;
+    }
 
+    // HTTP Startline builder
     String iteratedLine = (String){
-        .Data = httpStartLine.Data,
-        .Size = httpStartLine.Size,
+        .Data = httpStartLine->Data,
+        .Size = 0,
+        .Capacity = httpStartLineCapacity,
     };
     StringCopy(&httpMethod, &iteratedLine);
     iteratedLine.Data[iteratedLine.Size] = ' ';
@@ -133,28 +159,55 @@ int CreateHttpRequest(String* output, HttpMethod method, String* host, String* h
     iteratedLine.Size = 0;
     StringCopy(&httpVersion, &iteratedLine);
     iteratedLine.Data[iteratedLine.Size] = 0;
-    httpStartLine.Size = strlen(httpStartLine.Data);
+    httpStartLine->Size = strlen(httpStartLine->Data);
+    if (ListAdd(httpLines, httpStartLine) != 0)
+    {
+        FreeString(httpStartLine);
+        free(httpStartLine);
+        FreeList(httpLines);
+        return -1;
+    }
 
-    List* httpLines = NewList();
-    ListAdd(httpLines, &httpStartLine);
-
-    String httpHostLine = (String){
-        .Data = malloc(sizeof(char) * (4 + 2 + host->Size)),
-        .Size = 0,
-    };
+    // HTTP Header builder (HOST line)
+    size_t httpHostLineCapacity = 4 + 2 + host->Size;
+    String* httpHostLine = NewStringWithCapacity(httpHostLineCapacity);
+    if (httpHostLine == NULL)
+    {
+        FreeString(httpStartLine);
+        free(httpStartLine);
+        FreeList(httpLines);
+        return -1;
+    }
     iteratedLine = (String){
-        .Data = httpHostLine.Data,
-        .Size = httpHostLine.Size,
+        .Data = httpHostLine->Data,
+        .Size = 0,
+        .Capacity = httpHostLineCapacity,
     };
-
-    StringCopy(NewString(HOST_KEY, strlen(HOST_KEY)), &iteratedLine);
+    StringCopyFromCharPtr(&iteratedLine, HOST_KEY, strlen(HOST_KEY));
     iteratedLine.Data = iteratedLine.Data + iteratedLine.Size;
     iteratedLine.Size = 0;
     StringCopy(host, &iteratedLine);
     iteratedLine.Data[iteratedLine.Size] = 0;
-    httpHostLine.Size = strlen(httpHostLine.Data);
-    ListAdd(httpLines, &httpHostLine);
+    httpHostLine->Size = strlen(httpHostLine->Data);
+    if (ListAdd(httpLines, httpHostLine) != 0)
+    {
+        FreeString(httpStartLine);
+        free(httpStartLine);
+        FreeString(httpHostLine);
+        free(httpHostLine);
+        FreeList(httpLines);
+        return -1;
+    }
 
-    GenerateHttpReqStr(output, httpLines);
-    return 0;
+    int result = GenerateHttpReqStr(output, httpLines);
+
+    // Clean up
+    FreeString(httpStartLine);
+    free(httpStartLine);
+    FreeString(httpHostLine);
+    free(httpHostLine);
+    FreeList(httpLines);
+
+    return result;
 }
+
