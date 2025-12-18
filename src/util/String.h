@@ -6,8 +6,6 @@
 #define CSTDLIB_STRING_H
 #include <stddef.h>
 
-#include "String.h"
-
 typedef struct string_imp {
     char *Data;
     size_t Size;
@@ -20,6 +18,8 @@ String *StringSlice(String *inpStr, size_t start, size_t end);
 char StringGet(String *str, size_t index);
 
 int StringCopy(String *inpStr, String *outStr);
+
+int StringCopyFromCharPtr(String *outStr, const char *src, size_t size);
 
 int FreeString(String *str);
 
