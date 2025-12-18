@@ -9,6 +9,10 @@
 Node* NewNode(void* data)
 {
     Node* node = malloc(sizeof(Node));
+    if (node == NULL) {
+        return NULL;
+    }
+
     node->Data = data;
     node->Next = NULL;
     return node;
@@ -17,13 +21,23 @@ Node* NewNode(void* data)
 List* NewList()
 {
     List* list = malloc(sizeof(List));
+    if (list == NULL) {
+        return NULL;
+    }
+
     list->Size = 0;
+    list->Head = NULL;
+    list->Tail = NULL;
     return list;
 }
 
 void ListAdd(List* list, void* data)
 {
     Node* node = NewNode(data);
+    if (node == NULL) {
+        return;
+    }
+
     list->Size++;
     if (list->Size == 1)
     {
@@ -34,5 +48,4 @@ void ListAdd(List* list, void* data)
 
     list->Tail->Next = node;
     list->Tail = node;
-    return;
 }
